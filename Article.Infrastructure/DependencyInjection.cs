@@ -2,7 +2,7 @@
 using Article.Application.Services;
 using Article.Application.Services.IAuthServices;
 using Article.Domain.Abstractions;
-using Article.Domain.UserModel.IAuthRepositories;
+using Article.Domain.Models.UserModel.IAuthRepositories;
 using Article.Infrastructure.Data;
 using Article.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;

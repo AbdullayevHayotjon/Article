@@ -2,9 +2,9 @@
 
 namespace Article.Domain.Abstractions
 {
-    public class Entity
+    public abstract class Entity
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
     }
 }

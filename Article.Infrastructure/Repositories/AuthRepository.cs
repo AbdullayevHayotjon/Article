@@ -1,4 +1,4 @@
-﻿using Article.Domain.UserModel.IAuthRepositories;
+﻿using Article.Domain.Models.UserModel.IAuthRepositories;
 
 namespace Article.Infrastructure.Repositories
 {

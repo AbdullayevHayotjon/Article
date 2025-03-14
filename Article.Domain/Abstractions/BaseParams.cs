@@ -2,14 +2,17 @@
 
 namespace Article.Domain.Abstractions
 {
-    public class BaseParams : Entity
+    public abstract class BaseParams : Entity
     {
         [Required]
-        public DateTime CreateDate { get; set; }
+        public DateTime CreateDate { get; set; } = DateTime.UtcNow;
+
         [Required]
-        public DateTime UpdateDate { get; set; }
+        public DateTime UpdateDate { get; set; } = DateTime.UtcNow;
+
         public DateTime? DeleteDate { get; set; }
+
         [Required]
-        public bool IsDelete { get; set; }
+        public bool IsDeleted { get; set; } = false;
     }
 }
