@@ -1,14 +1,14 @@
 ﻿
-//using Article.Application.Services.IArticleServices;
-//using Article.Domain.MainModels.ArticleModels;
-//using Article.Domain.MainModels.UserModel;
-//using Microsoft.AspNetCore.Http;
-//using System;
+using Article.Application.Services.IArticleServices;
+using Article.Domain.MainModels.ArticleModels;
+using Article.Domain.MainModels.UserModel;
+using Microsoft.AspNetCore.Http;
+using System;
 
-//namespace Article.Application.Services.ArticleServices
-//{
-//    public class ArticleService : IArticleService
-//    {
+namespace Article.Application.Services.ArticleServices
+{
+    public class ArticleService 
+    {
 //        private readonly AppDbContext _context;
 
 //        public ArticleService(AppDbContext context)
@@ -32,7 +32,7 @@
 //                var article = new ArticleModel
 //                {
 //                    Title = title,
-                    
+
 //                    // = authorName,
 //                    FileData = fileData,  // Bazaga saqlaymiz
 //                    ContentType = file.ContentType,
@@ -87,5 +87,5 @@
 //        {
 //            return await _context.Articles.FindAsync(articleId);
 //        }
-//    }
-//}
+  }
+}
