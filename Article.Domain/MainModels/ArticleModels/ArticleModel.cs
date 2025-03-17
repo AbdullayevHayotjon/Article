@@ -1,4 +1,5 @@
 ﻿using Article.Domain.Abstractions;
+using Article.Domain.HelpModels.ConclusionModel;
 using Article.Domain.MainModels.UserModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -25,17 +26,21 @@ namespace Article.Domain.MainModels.ArticleModels
         public DateTime PublishedDate { get; set; } = DateTime.UtcNow;
 
         [Required(ErrorMessage = "Maqola holati bo‘sh bo‘lishi mumkin emas!")]
-        public ArticleStatus Status { get; set; } = ArticleStatus.Pending;
+        public ArticleStatus Status { get; set; } = ArticleStatus.Sent;
+
+        // Maqola xulosasi bilan bog‘lash
+        public Conclusion? Conclusion { get; set; }
 
         // User bilan bog‘lash
-        public int UserId { get; set; }
+        public Guid UserId { get; set; }
         public virtual User? User { get; set; }
     }
 
     public enum ArticleStatus
     {
-        Pending = 1,  // Ko‘rib chiqish jarayonida
-        Approved = 2, // Tasdiqlangan
-        Rejected = 3  // Rad etilgan
+        Sent = 1,     // Yuborildi
+        Pending = 2,  // Ko‘rib chiqish jarayonida
+        Approved = 3, // Tasdiqlangan
+        Rejected = 4  // Rad etilgan
     }
 }
