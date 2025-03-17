@@ -29,7 +29,9 @@ namespace Article.Domain.MainModels.ArticleModels
 
         // User bilan bog‘lash
         public int UserId { get; set; }
-        public virtual User? User { get; set; }
+        public  User? user { get; set; }
+
+        
     }
 
     public enum ArticleStatus
