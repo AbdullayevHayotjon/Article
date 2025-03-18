@@ -6,7 +6,7 @@ namespace Article.Application.Services.IArticleServices
 {
     public interface IArticleService
     {
-        Task<ArticleModel> UploadArticleAsync(IFormFile file, string title, string authorName);
+        Task<ArticleModel> UploadArticleAsync(IFormFile file, string title, string category, Guid userId);
         Task<byte[]> DownloadArticleAsync(Guid articleId);
         Task<ArticleModel> ResubmitArticleAsync(Guid articleId, IFormFile file);
         Task<ArticleModel?> GetArticleByIdAsync(Guid articleId);

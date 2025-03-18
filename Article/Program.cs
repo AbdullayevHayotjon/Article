@@ -38,14 +38,20 @@ namespace Article
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
                 };
             });
-
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll",
+                    policy => policy.AllowAnyOrigin()
+                                    .AllowAnyMethod()
+                                    .AllowAnyHeader());
+            });
             // Servislarni qo‘shish
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
             {
                 options.EnableAnnotations();
-
+              
                 // Swaggerda Bearer tokenni qo‘shish
                 options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
                 {
@@ -76,7 +82,11 @@ namespace Article
             builder.Services.AddInfrastructureRegisterServices(builder.Configuration);
 
             var app = builder.Build();
-
+            app.Use(async (context, next) =>
+            {
+                context.Request.EnableBuffering();
+                await next();
+            });
             // Developmentda Swaggerni yoqish
             if (app.Environment.IsDevelopment())
             {
