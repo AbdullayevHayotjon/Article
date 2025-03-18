@@ -46,7 +46,7 @@ namespace Article.Infrastructure
             }
         }
         public DbSet<User> Users { get; set; }
-        public DbSet<ArticleModel> ArticleModels { get; set; }
+        public DbSet<ArticleModel> ModelArticle { get; set; }
         public DbSet<UserFollowing> UserFollowings { get; set; }
         public DbSet<Conclusion> Conclusions { get; set; }
     }
