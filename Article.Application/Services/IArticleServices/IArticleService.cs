@@ -1,4 +1,5 @@
 ﻿
+using Article.Domain.Abstractions;
 using Article.Domain.MainModels.ArticleModels;
 using Microsoft.AspNetCore.Http;
 
@@ -6,9 +7,9 @@ namespace Article.Application.Services.IArticleServices
 {
     public interface IArticleService
     {
-        Task<ArticleModel> UploadArticleAsync(IFormFile file, string title, string category, Guid userId);
-        Task<byte[]> DownloadArticleAsync(Guid articleId);
-        Task<ArticleModel> ResubmitArticleAsync(Guid articleId, IFormFile file);
-        Task<ArticleModel?> GetArticleByIdAsync(Guid articleId);
+        Task<Result<ArticleModel>> UploadArticleAsync(IFormFile file, string title, string category, Guid userId);
+        Task<Result<byte[]>> DownloadArticleAsync(Guid articleId);
+        Task<Result<ArticleModel>> ResubmitArticleAsync(Guid articleId, IFormFile file);
+        Task<Result<ArticleModel?>> GetArticleByIdAsync(Guid articleId);
     }
 }
