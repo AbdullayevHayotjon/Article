@@ -10,8 +10,7 @@ namespace Article.Domain.HelpModels.ResubmitArticleRequestModel
 {
     public class ResubmitArticleRequest
     {
-        [Required]
-        public Guid ArticleId { get; set; }
+      
 
         [Required]
         public IFormFile File { get; set; }

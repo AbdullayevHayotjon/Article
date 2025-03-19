@@ -1,6 +1,7 @@
 ﻿using Article.Application.Services.IArticleServices;
 using Article.Domain.Abstractions;
 using Article.Domain.MainModels.ArticleModels;
+using Article.Domain.MainModels.UserModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,10 +22,10 @@ namespace Article.Infrastructure.ArticleServices
             try
             {
                 if (file == null || file.Length == 0)
-                    throw new ArgumentException("Fayl yuklanmadi.");
+                    return Result<ArticleModel>.Failure(UserError.checkFileUpload);
 
                 if (Path.GetExtension(file.FileName).ToLower() != ".docx")
-                    throw new ArgumentException("Faqat .docx formatdagi fayllarni yuklash mumkin.");
+                    return Result<ArticleModel>.Failure(UserError.ErrodFormatFile);
 
                 if (!Directory.Exists(_uploadPath))
                     Directory.CreateDirectory(_uploadPath);
@@ -54,63 +55,86 @@ namespace Article.Infrastructure.ArticleServices
             }
             catch(Exception ex)
             {
-                var top = new Error("222",ex.Message);
-                return Result<ArticleModel>.Failure(top);
+               
+                return Result<ArticleModel>.Failure(new Error("UploadArticleAsync da xatolik",ex.Message));
             }
         }
 
         public async Task<Result<byte[]>> DownloadArticleAsync(Guid articleId)
         {
-            var article = await _context.ModelArticle.FindAsync(articleId);
-            if (article == null || string.IsNullOrEmpty(article.FileUrl) || !File.Exists(article.FileUrl))
-                throw new FileNotFoundException("Fayl topilmadi.");
+            try
+            {
+                var article = await _context.ModelArticle.FindAsync(articleId);
+                if (article == null || string.IsNullOrEmpty(article.FileUrl) || !File.Exists(article.FileUrl))
+                    return Result<byte[]>.Failure(new Error("FileNotFound", "Fayl topilmadi yoki yo‘q."));
 
-            var fileBytes = await File.ReadAllBytesAsync(article.FileUrl);
-            return Result<byte[]>.Success(fileBytes);
+                var fileBytes = await File.ReadAllBytesAsync(article.FileUrl);
+                return Result<byte[]>.Success(fileBytes);
+            }
+            catch (Exception ex)
+            {
+                return Result<byte[]>.Failure(new Error("DownloadError", $"Xatolik yuz berdi: {ex.Message}"));
+            }
         }
 
 
         public async Task<Result<ArticleModel>> ResubmitArticleAsync(Guid articleId, IFormFile file)
         {
-            var article = await _context.ModelArticle.FindAsync(articleId);
-            if (article == null)
-                throw new ArgumentException("Maqola topilmadi.");
-
-            if (article.Status != ArticleStatus.Rejected)
-                throw new ArgumentException("Faqat rad etilgan maqolalar qayta yuklanishi mumkin.");
-
-            if (file == null || file.Length == 0)
-                throw new ArgumentException("Fayl yuklanmadi.");
-
-            if (Path.GetExtension(file.FileName).ToLower() != ".docx")
-                throw new ArgumentException("Faqat .docx formatdagi fayllarni yuklash mumkin.");
-
-            if (!Directory.Exists(_uploadPath))
-                Directory.CreateDirectory(_uploadPath);
-
-            string fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
-            string filePath = Path.Combine(_uploadPath, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            try
             {
-                await file.CopyToAsync(stream);
+                var article = await _context.ModelArticle.FindAsync(articleId);
+                if (article == null)
+                    return Result<ArticleModel>.Failure(UserError.ErrorArticleDontFind);
+
+                if (article.Status != ArticleStatus.Rejected)
+                    return Result<ArticleModel>.Failure(UserError.rejectedError);
+
+
+                if (file == null || file.Length == 0)
+                    return Result<ArticleModel>.Failure(UserError.checkFileUpload);
+
+                if (Path.GetExtension(file.FileName).ToLower() != ".docx")
+                    return Result<ArticleModel>.Failure(UserError.ErrodFormatFile);
+
+                if (!Directory.Exists(_uploadPath))
+                    Directory.CreateDirectory(_uploadPath);
+
+                string fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+                string filePath = Path.Combine(_uploadPath, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                if (!string.IsNullOrEmpty(article.FileUrl) && File.Exists(article.FileUrl))
+                    File.Delete(article.FileUrl);
+
+                article.FileUrl = filePath;
+                article.Status = ArticleStatus.Pending;
+                article.PublishedDate = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+                return Result<ArticleModel>.Success(article);
             }
+            catch(Exception ex)
+            {
+                return Result<ArticleModel>.Failure(new Error("ResubmitArticleAsync da xatolik", ex.Message));
 
-            if (!string.IsNullOrEmpty(article.FileUrl) && File.Exists(article.FileUrl))
-                File.Delete(article.FileUrl);
-
-            article.FileUrl = filePath;
-            article.Status = ArticleStatus.Pending;
-            article.PublishedDate = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-            return Result<ArticleModel>.Success(article);
+            }
         }
 
-        public async Task<Result<ArticleModel?>> GetArticleByIdAsync(Guid articleId)
+        public async Task<Result<ArticleModel>> GetArticleByIdAsync(Guid articleId)
         {
-            var top= await _context.ModelArticle.Include(a => a.User).FirstOrDefaultAsync(a => a.Id == articleId);
-            return Result<ArticleModel>.Success(top);
+            try
+            {
+                var top = await _context.ModelArticle.Include(a => a.User).FirstOrDefaultAsync(a => a.Id == articleId);
+                return Result<ArticleModel>.Success(top);
+            }
+            catch(Exception ex)
+            {
+                return Result<ArticleModel>.Failure(new Error("GetArticleByIdAsync da xatolik", ex.Message));
+            }
         }
     }
 }

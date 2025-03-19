@@ -10,6 +10,6 @@ namespace Article.Application.Services.IArticleServices
         Task<Result<ArticleModel>> UploadArticleAsync(IFormFile file, string title, string category, Guid userId);
         Task<Result<byte[]>> DownloadArticleAsync(Guid articleId);
         Task<Result<ArticleModel>> ResubmitArticleAsync(Guid articleId, IFormFile file);
-        Task<Result<ArticleModel?>> GetArticleByIdAsync(Guid articleId);
+        Task<Result<ArticleModel>> GetArticleByIdAsync(Guid articleId);
     }
 }
