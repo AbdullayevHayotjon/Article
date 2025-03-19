@@ -16,11 +16,11 @@ namespace Article.Api.Controllers
         }
 
         [HttpPost("upload")]
-public async Task<IActionResult> UploadArticle([FromForm] UploadArticleRequest request)
-{
-    var article = await _articleService.UploadArticleAsync(request.File, request.Title, request.Category, request.UserId);
-    return Ok(article);
-}
+        public async Task<IActionResult> UploadArticle([FromForm] UploadArticleRequest request)
+        {
+            var article = await _articleService.UploadArticleAsync(request.File, request.Title, request.Category, request.UserId);
+            return Ok(article);
+        }
 
 
         [HttpGet("download/{articleId}")]

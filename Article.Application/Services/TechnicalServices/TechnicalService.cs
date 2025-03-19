@@ -16,6 +16,11 @@ namespace Article.Application.Services.TechnicalServices
         {
             _technicalRepository = technicalRepository;
         }
+        public async ValueTask<IEnumerable<ArticleModel>> GetAllArticlesAsync()
+        {
+            return await _technicalRepository.GetAllAsync();
+        }
+
         public async ValueTask<bool> ApproveArticleAsync(Guid articleId) =>
                await _technicalRepository.UpdateArticleStatusAsync(articleId, ArticleStatus.Approved);
 

@@ -13,6 +13,18 @@ namespace Article.Api.Controllers
         {
             _technicalService = technicalService;
         }
+
+        [HttpGet("AllArticles")]
+        public async ValueTask<IActionResult> GetAllArticlesAsync()
+        {
+            var articles = await _technicalService.GetAllArticlesAsync();
+
+            if (articles == null || !articles.Any())
+                return NotFound("Maqolalar mavjud emas.");
+
+            return Ok(articles);
+        }
+
         [HttpGet("{articleId}")]
         public async ValueTask<IActionResult> GetArticleByIdAsync(Guid articleId)
         {

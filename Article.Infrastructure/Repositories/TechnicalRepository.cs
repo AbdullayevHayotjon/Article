@@ -18,6 +18,13 @@ namespace Article.Infrastructure.Repositories
             _context = dbContext;
         }
 
+        public async ValueTask<IEnumerable<ArticleModel>> GetAllAsync()
+        {
+            return await _context.ModelArticle
+                .Include(a => a.User) 
+                .ToListAsync();
+        }
+
         public async ValueTask<ArticleModel?> GetArticleByIdAsync(Guid articleId)
         {
             return await _context.ModelArticle

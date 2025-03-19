@@ -4,6 +4,7 @@ namespace Article.Application.Services.TechnicalServices
 {
     public interface ITechnicalService
     {
+        ValueTask<IEnumerable<ArticleModel>> GetAllArticlesAsync();
         ValueTask<ArticleModel?> GetArticleByIdAsync(Guid articleId);
         ValueTask<string?> ReadArticleAsync(Guid articleId);
         ValueTask<bool> SaveConclusionAsync(Guid articleId, string summary);
