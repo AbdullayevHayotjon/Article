@@ -19,6 +19,11 @@ namespace Article
             var jwtSettings = builder.Configuration.GetSection("JwtSettings");
             var secretKey = jwtSettings["Secret"];
 
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+            });
+
             // JWT autentifikatsiya tizimini sozlash
             builder.Services.AddAuthentication(options =>
             {
