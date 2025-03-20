@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using MimeKit;
 using MailKit.Security;
+using Article.Domain.HelpModels.TempUserModel;
 
 namespace Article.Infrastructure.Repositories
 {
@@ -33,10 +34,10 @@ namespace Article.Infrastructure.Repositories
             _configuration = configuration;
         }
 
-        public async Task<bool> IsUserExistsByEmailAsync(string email)
+        public async Task<User> IsUserExistsByEmailAsync(string email)
         {
                 return await _applicationDbContext.Users
-                    .AnyAsync(user => user.Email == email && !user.IsDeleted);
+                    .FirstOrDefaultAsync(user => user.Email == email && !user.IsDeleted);
         }
 
 
@@ -45,6 +46,26 @@ namespace Article.Infrastructure.Repositories
             return RandomNumberGenerator.GetInt32(1000, 10000);
         }
 
+        public async Task SaveAddVerificationCode(TempUser tempUser)
+        {
+            await _applicationDbContext.TempUsers.AddAsync(tempUser);
+        }
+
+        public async Task<TempUser> IsTempUserExistsByEmailAsync(string email)
+        {
+            return await _applicationDbContext.TempUsers
+                .FirstOrDefaultAsync(user => user.Email == email && !user.IsDeleted);
+        }
+
+        public async Task SaveUpdateVerificationCode(TempUser oldTempUser, TempUser newTempUser)
+        {
+            oldTempUser.Firstname = newTempUser.Firstname;
+            oldTempUser.Lastname = newTempUser.Lastname;
+            oldTempUser.Email = newTempUser.Email;
+            oldTempUser.HashedPassword = newTempUser.HashedPassword;
+            oldTempUser.VerificationCode = newTempUser.VerificationCode;
+            oldTempUser.UpdateDate = DateTime.UtcNow;
+        }
         public async Task SendVerificationEmail(string email, int code)
         {
             try
@@ -55,8 +76,14 @@ namespace Article.Infrastructure.Repositories
                 message.Subject = "Tasdiqlash kodi";
 
                 // To‘g‘ri yo‘lni aniqlash
-                string basePath = Path.Combine("D:\\Proyektlar\\ArticleProject", "Article.Infrastructure", "Templates");
-                string templatePath = Path.Combine(basePath, "verification_email.html");
+                string baseDirectory = AppContext.BaseDirectory;
+
+                // Loyiha ildiz katalogini olish
+                string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.Parent.Parent.FullName;
+
+                // To‘g‘ri yo‘lni hosil qilish
+                string templatePath = Path.Combine(projectRoot, "Article.Infrastructure", "Templates", "verification_email.html");
+
                 string body = File.ReadAllText(templatePath).Replace("{{CODE}}", code.ToString());
 
                 message.Body = new TextPart("html") { Text = body };

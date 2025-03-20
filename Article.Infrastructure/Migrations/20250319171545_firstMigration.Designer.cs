@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Article.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250318082451_firstMigration")]
+    [Migration("20250319171545_firstMigration")]
     partial class firstMigration
     {
         /// <inheritdoc />
@@ -65,6 +65,63 @@ namespace Article.Infrastructure.Migrations
                         .HasDatabaseName("ix_conclusions_article_id");
 
                     b.ToTable("Conclusions", "HelpSchema");
+                });
+
+            modelBuilder.Entity("Article.Domain.HelpModels.TempUserModel.TempUser", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("create_date");
+
+                    b.Property<DateTime?>("DeleteDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("delete_date");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("email");
+
+                    b.Property<DateTime>("ExpirationTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expiration_time");
+
+                    b.Property<string>("Firstname")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("firstname");
+
+                    b.Property<string>("HashedPassword")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("hashed_password");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("Lastname")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("lastname");
+
+                    b.Property<DateTime>("UpdateDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("update_date");
+
+                    b.Property<int>("VerificationCode")
+                        .HasColumnType("integer")
+                        .HasColumnName("verification_code");
+
+                    b.HasKey("Id")
+                        .HasName("pk_temp_users");
+
+                    b.ToTable("TempUsers", "HelpSchema");
                 });
 
             modelBuilder.Entity("Article.Domain.HelpModels.UserFollowingModel.UserFollowing", b =>

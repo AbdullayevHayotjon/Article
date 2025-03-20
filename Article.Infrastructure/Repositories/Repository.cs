@@ -23,10 +23,9 @@ namespace Article.Infrastructure.Repositories
             return result;
         }
         public async Task AddAsync(
-            T entity,
-            CancellationToken cancellationToken = default)
+            T entity)
         {
-            await _context.Set<T>().AddAsync(entity, cancellationToken);
+            await _context.Set<T>().AddAsync(entity);
         }
         public async Task UpdateAsync(T entity)
         {

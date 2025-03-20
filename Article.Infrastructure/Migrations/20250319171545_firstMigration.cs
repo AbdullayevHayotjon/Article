@@ -18,6 +18,28 @@ namespace Article.Infrastructure.Migrations
                 name: "HelpSchema");
 
             migrationBuilder.CreateTable(
+                name: "TempUsers",
+                schema: "HelpSchema",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    firstname = table.Column<string>(type: "text", nullable: false),
+                    lastname = table.Column<string>(type: "text", nullable: false),
+                    email = table.Column<string>(type: "text", nullable: false),
+                    hashed_password = table.Column<string>(type: "text", nullable: false),
+                    verification_code = table.Column<int>(type: "integer", nullable: false),
+                    expiration_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    create_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    update_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    delete_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    is_deleted = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_temp_users", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 schema: "MainSchema",
                 columns: table => new
@@ -160,6 +182,10 @@ namespace Article.Infrastructure.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Conclusions",
+                schema: "HelpSchema");
+
+            migrationBuilder.DropTable(
+                name: "TempUsers",
                 schema: "HelpSchema");
 
             migrationBuilder.DropTable(

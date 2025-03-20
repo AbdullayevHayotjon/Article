@@ -22,16 +22,11 @@ namespace Article.Api.Controllers
             )]
         public async Task<IActionResult> SignUp([FromBody] RegisterDTO model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             try
             {
                 var result = await _authService.SignUpService(model);
 
-                    return result.IsSuccess ? Ok(result) : BadRequest(result);
+                return result.IsSuccess ? Ok(result) : BadRequest(result);
             }
             catch (Exception ex)
             {
@@ -44,15 +39,17 @@ namespace Article.Api.Controllers
             Summary = "Userning tizimga kirishi",
             Description = "Userning tizimga kirishi uchun email va parolingizni kiriting va bosing"
             )]
-        public async Task<IActionResult> SignIn()
+        public async Task<IActionResult> SignIn([FromBody] SignInDTO signInDTO)
         {
             try
             {
-                return Ok();
+                var result = await _authService.SignInService(signInDTO);
+
+                return result.IsSuccess ? Ok(result) : BadRequest(result);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(500, new { Message = "Server xatosi", Error = ex.Message });
             }
         }
 

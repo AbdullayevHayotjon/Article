@@ -1,5 +1,6 @@
 ﻿using Article.Application.Services.IAuthServices;
 using Article.Domain.Abstractions;
+using Article.Domain.HelpModels.TempUserModel;
 using Article.Domain.MainModels.UserModel;
 using Article.Domain.Models.UserModel.IAuthRepositories;
 
@@ -19,7 +20,9 @@ namespace Article.Application.Services
         {
             string email = model.Email.Trim().ToLower(); // Emailni tozalash
 
-            if (await _authRepository.IsUserExistsByEmailAsync(email))
+            User user = await _authRepository.IsUserExistsByEmailAsync(email);
+
+            if (user is not null)
             {
                 return Result<string>.Failure(UserError.CheckEmail); // Email allaqachon ro‘yxatdan o‘tgan
             }
@@ -28,10 +31,29 @@ namespace Article.Application.Services
 
             try
             {
-                await _authRepository.SendVerificationEmail(email, code);
+                TempUser OldTempUser = await _authRepository.IsTempUserExistsByEmailAsync(email);
 
-                // Tasdiqlash kodini vaqtinchalik saqlash (agar kerak bo‘lsa)
-                // await _authRepository.SaveVerificationCode(email, code);
+                TempUser NewTempUser = new TempUser
+                {
+                    Firstname = model.Firstname,
+                    Lastname = model.Lastname,
+                    Email = email,
+                    HashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password),
+                    VerificationCode = code,
+                };
+
+                if (OldTempUser is not null)
+                {
+                    await _authRepository.SaveUpdateVerificationCode(OldTempUser, NewTempUser);
+                }
+                else
+                {
+                    await _authRepository.SaveAddVerificationCode(NewTempUser);
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+
+                await _authRepository.SendVerificationEmail(email, code);
 
                 return Result<string>.Success($"{email} ga tasdiqlash kodi yuborildi");
             }
@@ -42,5 +64,17 @@ namespace Article.Application.Services
             }
         }
 
+        public async Task<Result<string>> SignInService(SignInDTO signInDTO)
+        {
+            string email = signInDTO.Email.Trim().ToLower(); // Emailni tozalash
+
+            User user = await _authRepository.IsUserExistsByEmailAsync(email);
+
+            if (user is null)
+            {
+                return Result<string>.Failure(UserError.CheckEmail); // Email topilmadi
+            }
+            return Result<string>.Failure(UserError.CheckEmail);
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Article.Domain.Abstractions;
 using Article.Domain.HelpModels.ConclusionModel;
+using Article.Domain.HelpModels.TempUserModel;
 using Article.Domain.HelpModels.UserFollowingModel;
 using Article.Domain.MainModels.ArticleModels;
 using Article.Domain.MainModels.UserModel;
@@ -49,5 +50,6 @@ namespace Article.Infrastructure
         public DbSet<ArticleModel> ModelArticle { get; set; }
         public DbSet<UserFollowing> UserFollowings { get; set; }
         public DbSet<Conclusion> Conclusions { get; set; }
+        public DbSet<TempUser> TempUsers { get; set; }
     }
 }
