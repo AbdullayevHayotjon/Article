@@ -15,6 +15,8 @@ using System.Security.Cryptography;
 using MimeKit;
 using MailKit.Security;
 using Article.Domain.HelpModels.TempUserModel;
+using Article.Domain.HelpModels.RefreshTokenModel;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace Article.Infrastructure.Repositories
 {
@@ -36,10 +38,9 @@ namespace Article.Infrastructure.Repositories
 
         public async Task<User> IsUserExistsByEmailAsync(string email)
         {
-                return await _applicationDbContext.Users
-                    .FirstOrDefaultAsync(user => user.Email == email && !user.IsDeleted);
+            return await _applicationDbContext.Users
+                .FirstOrDefaultAsync(user => user.Email == email && !user.IsDeleted);
         }
-
 
         public async Task<int> GenerateCode()
         {
@@ -54,7 +55,7 @@ namespace Article.Infrastructure.Repositories
         public async Task<TempUser> IsTempUserExistsByEmailAsync(string email)
         {
             return await _applicationDbContext.TempUsers
-                .FirstOrDefaultAsync(user => user.Email == email && !user.IsDeleted);
+                .FirstOrDefaultAsync(user => user.Email == email);
         }
 
         public async Task SaveUpdateVerificationCode(TempUser oldTempUser, TempUser newTempUser)
@@ -64,8 +65,9 @@ namespace Article.Infrastructure.Repositories
             oldTempUser.Email = newTempUser.Email;
             oldTempUser.HashedPassword = newTempUser.HashedPassword;
             oldTempUser.VerificationCode = newTempUser.VerificationCode;
-            oldTempUser.UpdateDate = DateTime.UtcNow;
+            oldTempUser.ExpirationTime = newTempUser.ExpirationTime;
         }
+
         public async Task SendVerificationEmail(string email, int code)
         {
             try
@@ -102,28 +104,7 @@ namespace Article.Infrastructure.Repositories
             }
         }
 
-        public async Task SendWelcomeEmail(string email, string fullName)
-        {
-            var smtpClient = new SmtpClient(_smtpSettings.Server)
-            {
-                Port = _smtpSettings.Port,
-                Credentials = new NetworkCredential(_smtpSettings.Username, _smtpSettings.Password),
-                EnableSsl = true,
-            };
-
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress(_smtpSettings.SenderEmail, _smtpSettings.SenderName),
-                Subject = "Xush kelibsiz",
-                Body = EmailTemplate.GetWelcomeEmailTemplate(email, fullName),
-                IsBodyHtml = true,
-            };
-            mailMessage.To.Add(email);
-            await smtpClient.SendMailAsync(mailMessage);
-        }
-
-        
-        public async Task<string> GenerateToken(string userId, string username, string role)
+        public async Task<string> GenerateAccessToken(Guid userId, string username, UserRole role)
         {
             // Konfiguratsiya sozlamalarini olish
             var secretKey = _configuration["JwtSettings:Secret"];
@@ -140,7 +121,7 @@ namespace Article.Infrastructure.Repositories
     {
         new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),  // User ID
         new Claim(JwtRegisteredClaimNames.UniqueName, username),    // Username
-        new Claim(ClaimTypes.Role, role),                           // Role
+        new Claim(ClaimTypes.Role, role.ToString()),                           // Role
         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Unique Token ID
     };
 
@@ -154,6 +135,86 @@ namespace Article.Infrastructure.Repositories
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<string> GenerateRefreshToken(Guid userId)
+        {
+            string refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)); // 64 bayt uzunlikdagi tasodifiy token
+
+            var refreshTokenEntity = new RefreshToken
+            {
+                UserId = userId,
+                Token = refreshToken,
+                ExpiryDate = DateTime.UtcNow.AddDays(7) // 7 kun amal qiladi
+            };
+
+            // Eski refresh tokenni o‘chirish (agar bo‘lsa)
+            var existingToken = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.UserId == userId);
+            if (existingToken != null)
+            {
+                _context.RefreshTokens.Remove(existingToken);
+            }
+
+            _context.RefreshTokens.Add(refreshTokenEntity);
+
+            return refreshToken;
+        }
+
+        public async Task SendWelcomeEmail(string email, string fullName)
+        {
+            try
+            {
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress(_smtpSettings.SenderName, _smtpSettings.SenderEmail));
+                message.To.Add(new MailboxAddress(email, email)); // 🛑 Email qabul qiluvchi qo‘shildi!
+                message.Subject = "Xush kelibsiz!";
+
+                // Loyiha ildiz katalogini olish
+                string baseDirectory = AppContext.BaseDirectory;
+                string projectRoot = Directory.GetParent(baseDirectory)?.Parent?.Parent?.Parent?.Parent?.FullName ?? "";
+                string templatePath = Path.Combine(projectRoot, "Article.Infrastructure", "Templates", "welcome_user.html");
+
+                if (!File.Exists(templatePath))
+                {
+                    throw new FileNotFoundException($"Email shabloni topilmadi: {templatePath}");
+                }
+
+                string body = await File.ReadAllTextAsync(templatePath);
+                body = body.Replace("{{FULLNAME}}", fullName); // Fullname ni joyiga qo‘yish
+
+                message.Body = new TextPart("html") { Text = body };
+
+                using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
+                await smtpClient.ConnectAsync(_smtpSettings.Server, _smtpSettings.Port, SecureSocketOptions.StartTls);
+                await smtpClient.AuthenticateAsync(_smtpSettings.Username, _smtpSettings.Password);
+                await smtpClient.SendAsync(message);
+                await smtpClient.DisconnectAsync(true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Email jo‘natishda xatolik: {ex.Message}");
+            }
+        }
+
+
+        public async Task<string> GenerateUniqueUsernameAsync()
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            string username = new string(Enumerable.Repeat(chars, 10)
+                    .Select(s => s[Random.Shared.Next(s.Length)]).ToArray());
+
+            return username;
+        }
+
+        public async Task<bool> IsUsernameExistsAsync(string username)
+        {
+            return await _applicationDbContext.Users
+                .AnyAsync(u => u.Username == username);
+        }
+
+        public async Task TempUserDelete(TempUser tempUser)
+        {
+            _applicationDbContext.TempUsers.Remove(tempUser);
         }
 
     }

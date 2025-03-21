@@ -1,6 +1,7 @@
 ﻿using Article.Domain.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 namespace Article.Domain.HelpModels.TempUserModel
 {
     [Table("TempUsers", Schema = "HelpSchema")]
-    public class TempUser : BaseParams
+    public class TempUser : Entity
     {
         public string Firstname { get; set; } = string.Empty;
         public string Lastname { get; set; } = string.Empty;

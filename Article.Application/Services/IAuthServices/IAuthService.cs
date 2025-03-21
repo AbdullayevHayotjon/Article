@@ -6,6 +6,7 @@ namespace Article.Application.Services.IAuthServices
     public interface IAuthService
     {
         Task<Result<string>> SignUpService(RegisterDTO model);
-        Task<Result<string>> SignInService(SignInDTO signInDTO);
+        Task<Result<TokenResponse>> SignInService(SignInDTO signInDTO);
+        Task<Result<string>> VerificationCodeService(VerificationCodeDTO verificationCodeDTO);
     }
 }

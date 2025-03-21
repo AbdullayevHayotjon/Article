@@ -11,7 +11,12 @@ namespace Article.Domain.Models.UserModel.IAuthRepositories
         Task<TempUser> IsTempUserExistsByEmailAsync(string email);
         Task SaveUpdateVerificationCode(TempUser oldTempUser, TempUser newTempUser);
         Task SendVerificationEmail(string email, int code);
+        Task<string> GenerateAccessToken(Guid userId, string username, UserRole role);
+        Task<string> GenerateRefreshToken(Guid userId);
+        Task AddAsync(User user);
         Task SendWelcomeEmail(string email, string fullName);
-        Task<string> GenerateToken(string userId, string username, string role);
+        Task<string> GenerateUniqueUsernameAsync();
+        Task<bool> IsUsernameExistsAsync(string username);
+        Task TempUserDelete(TempUser tempUser);
     }
 }

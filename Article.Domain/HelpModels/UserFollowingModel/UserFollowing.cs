@@ -9,7 +9,6 @@ namespace Article.Domain.HelpModels.UserFollowingModel
     {
         public Guid FollowerId { get; set; }
         public virtual User? Follower { get; set; }
-
         public Guid FollowingId { get; set; }
         public virtual User? Following { get; set; }
     }

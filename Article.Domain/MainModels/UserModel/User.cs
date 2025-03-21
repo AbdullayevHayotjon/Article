@@ -11,11 +11,11 @@ namespace Article.Domain.MainModels.UserModel
     {
         [Required(ErrorMessage = "FirstName bo‘sh bo‘lishi mumkin emas!")]
         [MinLength(2, ErrorMessage = "FirstName kamida 2 ta harf bo‘lishi kerak!")]
-        public string FirstName { get; set; } = string.Empty;
+        public string Firstname { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "LastName bo‘sh bo‘lishi mumkin emas!")]
         [MinLength(2, ErrorMessage = "LastName kamida 2 ta harf bo‘lishi kerak!")]
-        public string LastName { get; set; } = string.Empty;
+        public string Lastname { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email bo‘sh bo‘lishi mumkin emas!")]
         [EmailAddress(ErrorMessage = "Email formati noto‘g‘ri!")]

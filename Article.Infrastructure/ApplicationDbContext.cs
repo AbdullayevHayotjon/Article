@@ -1,5 +1,6 @@
 ﻿using Article.Domain.Abstractions;
 using Article.Domain.HelpModels.ConclusionModel;
+using Article.Domain.HelpModels.RefreshTokenModel;
 using Article.Domain.HelpModels.TempUserModel;
 using Article.Domain.HelpModels.UserFollowingModel;
 using Article.Domain.MainModels.ArticleModels;
@@ -51,5 +52,6 @@ namespace Article.Infrastructure
         public DbSet<UserFollowing> UserFollowings { get; set; }
         public DbSet<Conclusion> Conclusions { get; set; }
         public DbSet<TempUser> TempUsers { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
     }
 }

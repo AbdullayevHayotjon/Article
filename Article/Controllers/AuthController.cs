@@ -58,7 +58,7 @@ namespace Article.Api.Controllers
             Summary = "Parolni restart qilish",
             Description = "Ro'yhatdan o'tgan emailingiz orqali parolingizni restart qiling"
             )]
-        public async Task<IActionResult> UserRessetPassword()
+        public async Task<IActionResult> ForgotPassword()
         {
             try
             {
@@ -73,17 +73,19 @@ namespace Article.Api.Controllers
         [HttpPost]
         [SwaggerOperation(
             Summary = "Kodni tasdiqlash",
-            Description = "Emailingizga yuborilgan kodni kiriting va bosing"
+            Description = "Emailingiz, yuborilgan kodni kiriting va bosing"
             )]
-        public async Task<IActionResult> Verification()
+        public async Task<IActionResult> VerificationCode([FromBody] VerificationCodeDTO verificationCodeDTO)
         {
             try
             {
-                return Ok();
+                var result = await _authService.VerificationCodeService(verificationCodeDTO);
+
+                return result.IsSuccess ? Ok(result) : BadRequest(result);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(500, new { Message = "Server xatosi", Error = ex.Message });
             }
         }
     }
