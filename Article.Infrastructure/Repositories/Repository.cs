@@ -10,10 +10,9 @@ namespace Article.Infrastructure.Repositories
             _context = context;
         }
         public async Task<T> GetByIdAsync(
-            Guid id,
-            CancellationToken cancellationToken = default)
+            Guid id)
         {
-            var result = await _context.Set<T>().FindAsync(new object[] { id }, cancellationToken);
+            var result = await _context.Set<T>().FindAsync(new object[] { id });
             return result;
         }
         public async Task<List<T>> GetAllAsync(

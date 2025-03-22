@@ -1,4 +1,5 @@
-﻿using Article.Domain.HelpModels.TempUserModel;
+﻿using Article.Domain.HelpModels.RefreshTokenModel;
+using Article.Domain.HelpModels.TempUserModel;
 using Article.Domain.MainModels.UserModel;
 
 namespace Article.Domain.Models.UserModel.IAuthRepositories
@@ -18,5 +19,7 @@ namespace Article.Domain.Models.UserModel.IAuthRepositories
         Task<string> GenerateUniqueUsernameAsync();
         Task<bool> IsUsernameExistsAsync(string username);
         Task TempUserDelete(TempUser tempUser);
+        Task<RefreshToken> GetToken(string refreshToken);
+        Task<User> GetByIdAsync(Guid id);
     }
 }

@@ -8,5 +8,6 @@ namespace Article.Application.Services.IAuthServices
         Task<Result<string>> SignUpService(RegisterDTO model);
         Task<Result<TokenResponse>> SignInService(SignInDTO signInDTO);
         Task<Result<string>> VerificationCodeService(VerificationCodeDTO verificationCodeDTO);
+        Task<Result<TokenResponse>> RefreshTokenService(RefreshTokenDTO refreshToken);
     }
 }

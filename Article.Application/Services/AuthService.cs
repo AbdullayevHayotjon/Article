@@ -1,8 +1,10 @@
 ﻿using Article.Application.Services.IAuthServices;
 using Article.Domain.Abstractions;
+using Article.Domain.HelpModels.RefreshTokenModel;
 using Article.Domain.HelpModels.TempUserModel;
 using Article.Domain.MainModels.UserModel;
 using Article.Domain.Models.UserModel.IAuthRepositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace Article.Application.Services
 {
@@ -146,5 +148,50 @@ namespace Article.Application.Services
                 return Result<string>.Failure(new Error("VerificationCode da xatolik", ex.Message));
             }
         }
+
+        public async Task<Result<TokenResponse>> RefreshTokenService(RefreshTokenDTO refreshTokenDto)
+        {
+            try
+            {
+                // 1. Bazadan refresh tokenni topish
+                RefreshToken refreshTokenEntity = await _authRepository.GetToken(refreshTokenDto.RefreshToken);
+
+                if (refreshTokenEntity == null)
+                {
+                    return Result<TokenResponse>.Failure(UserError.CheckRefreshToken);
+                }
+
+                // 2. Tokenning yaroqlilik muddatini tekshirish
+                if (refreshTokenEntity.ExpiryDate < DateTime.UtcNow)
+                {
+                    return Result<TokenResponse>.Failure(UserError.CheckRefreshTokenDate);
+                }
+
+                // 3. Foydalanuvchi ma’lumotlarini olish
+                var user = await _authRepository.GetByIdAsync(refreshTokenEntity.UserId);
+                if (user == null)
+                {
+                    return Result<TokenResponse>.Failure(UserError.CheckUser);
+                }
+
+                // 4. Yangi tokenlar yaratish
+                var newAccessToken = await _authRepository.GenerateAccessToken(user.Id, user.Username, user.Role);
+                var newRefreshToken = await _authRepository.GenerateRefreshToken(user.Id);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                // 5. Yangi tokenlarni qaytarish    
+                return Result<TokenResponse>.Success(new TokenResponse
+                {
+                    AccessToken = newAccessToken,
+                    RefreshToken = newRefreshToken
+                });
+            }
+            catch (Exception ex)
+            {
+                return Result<TokenResponse>.Failure(new Error("Refresh tokenda xatolik", ex.Message));
+            }
+        }
+
     }
 }

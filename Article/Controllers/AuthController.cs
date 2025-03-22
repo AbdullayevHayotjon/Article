@@ -88,5 +88,24 @@ namespace Article.Api.Controllers
                 return StatusCode(500, new { Message = "Server xatosi", Error = ex.Message });
             }
         }
+
+        [HttpPost]
+        [SwaggerOperation(
+            Summary = "Token yangilash",
+            Description = "Refresh token kiriting va bosing"
+            )]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDTO refreshToken)
+        {
+            try
+            {
+                var result = await _authService.RefreshTokenService(refreshToken);       
+
+                return result.IsSuccess ? Ok(result) : BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Server xatosi", Error = ex.Message });
+            }
+        }
     }
 }

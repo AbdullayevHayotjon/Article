@@ -22,17 +22,14 @@ namespace Article.Infrastructure.Repositories
 {
     public class AuthRepository : Repository<User>, IAuthRepository
     {
-        private readonly ISqlConnection _sqlConnection;
         private readonly SmtpSettings _smtpSettings;
         private readonly ApplicationDbContext _applicationDbContext;
         private readonly IConfiguration _configuration;
         public AuthRepository(ApplicationDbContext context, IOptions<SmtpSettings> smtpSettings,
-        ApplicationDbContext applicationDbContext,
-        ISqlConnection sqlConnection, IConfiguration configuration) : base(context)
+        ApplicationDbContext applicationDbContext, IConfiguration configuration) : base(context)
         {
             _smtpSettings = smtpSettings.Value;
             _applicationDbContext = applicationDbContext;
-            _sqlConnection = sqlConnection;
             _configuration = configuration;
         }
 
@@ -216,6 +213,13 @@ namespace Article.Infrastructure.Repositories
         {
             _applicationDbContext.TempUsers.Remove(tempUser);
         }
+
+        public async Task<RefreshToken> GetToken(string refreshToken)
+        {
+            return await _applicationDbContext.RefreshTokens
+                .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+        }
+
 
     }
 }
