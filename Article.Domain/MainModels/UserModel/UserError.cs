@@ -28,9 +28,15 @@ namespace Article.Domain.MainModels.UserModel
         public static Error CheckRefreshTokenDate = new(
         "Refresh token eskirgan",
         "Yangi login qilish talab etiladi.");
-        public static Error CheckUser = new(
+        public static Error CheckUserByRefreshToken = new(
         "Foydalanuvchi topilmadi",
         "Berilgan refresh tokenga mos foydalanuvchi yo‘q.");
+        public static Error CheckUserByEmail = new(
+        "Foydalanuvchi topilmadi",
+        "Berilgan emailga mos foydalanuvchi yo‘q.");
+        public static Error CheckUserById = new(
+        "Foydalanuvchi topilmadi",
+        "Berilgan Id ga mos foydalanuvchi yo‘q.");
         public static Error checkFileUpload = new("Fayl yuklanmadi", "Fayl yuklanmadi.");
         public static Error ErrodFormatFile = new("it isn't .doc", "Faqat .docx formatdagi fayllarni yuklash mumkin.");
         public static Error ErrorUploadArticleAsync = new("UploadArticleAsync", "xatolik articleServiseda");

@@ -2,12 +2,10 @@
 
 namespace Article.Domain.MainModels.UserModel
 {
-    public class VerificationCodeDTO
+    public class ForgotPasswordDTO
     {
         [Required]
         [EmailAddress]
         public string Email { get; set; }
-        [Required]
-        public int Code { get; set; }
     }
 }

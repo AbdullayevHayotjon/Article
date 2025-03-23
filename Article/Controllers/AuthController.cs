@@ -55,23 +55,6 @@ namespace Article.Api.Controllers
 
         [HttpPost]
         [SwaggerOperation(
-            Summary = "Parolni restart qilish",
-            Description = "Ro'yhatdan o'tgan emailingiz orqali parolingizni restart qiling"
-            )]
-        public async Task<IActionResult> ForgotPassword()
-        {
-            try
-            {
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost]
-        [SwaggerOperation(
             Summary = "Kodni tasdiqlash",
             Description = "Emailingiz, yuborilgan kodni kiriting va bosing"
             )]
@@ -86,6 +69,44 @@ namespace Article.Api.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { Message = "Server xatosi", Error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [SwaggerOperation(
+            Summary = "Parolni unutdingizmi?",
+            Description = "Ro'yhatdan o'tgan emailingiz orqali parolingizni almashtiring"
+            )]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO forgotPasswordDTO)
+        {
+            try
+            {
+                var result = await _authService.ForgotPasswordService(forgotPasswordDTO);
+
+                return result.IsSuccess ? Ok(result) : BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [SwaggerOperation(
+            Summary = "Parolni yangilash?",
+            Description = "Token, yangi parolingizni kiriting va parolingizni almashtiring"
+            )]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO resetPasswordDTO)
+        {
+            try
+            {
+                var result = await _authService.ResetPasswordService(resetPasswordDTO);
+
+                return result.IsSuccess ? Ok(result) : BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 

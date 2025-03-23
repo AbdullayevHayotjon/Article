@@ -1,10 +1,11 @@
 ﻿using Article.Application.Services.IAuthServices;
 using Article.Domain.Abstractions;
+using Article.Domain.HelpModels.PasswordResetModel;
 using Article.Domain.HelpModels.RefreshTokenModel;
 using Article.Domain.HelpModels.TempUserModel;
 using Article.Domain.MainModels.UserModel;
 using Article.Domain.Models.UserModel.IAuthRepositories;
-using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace Article.Application.Services
 {
@@ -55,7 +56,12 @@ namespace Article.Application.Services
 
                 await _unitOfWork.SaveChangesAsync();
 
-                await _authRepository.SendVerificationEmail(email, code);
+                string baseDirectory = AppContext.BaseDirectory;
+                string projectRoot = Directory.GetParent(baseDirectory)?.Parent?.Parent?.Parent?.Parent?.FullName ?? "";
+                string templatePath = Path.Combine(projectRoot, "Article.Infrastructure", "Templates", "verification_email.html");
+                string body = await File.ReadAllTextAsync(templatePath);
+                body = body.Replace("{{CODE}}", code.ToString());
+                await _authRepository.SendMessageEmail(email, "Tasdiqlash kodi", body);
 
                 return Result<string>.Success($"{email} ga tasdiqlash kodi yuborildi");
             }
@@ -139,7 +145,12 @@ namespace Article.Application.Services
 
                 await _unitOfWork.SaveChangesAsync();
 
-                await _authRepository.SendWelcomeEmail(email, $"{tempUser.Firstname} {tempUser.Lastname}");
+                string baseDirectory = AppContext.BaseDirectory;
+                string projectRoot = Directory.GetParent(baseDirectory)?.Parent?.Parent?.Parent?.Parent?.FullName ?? "";
+                string templatePath = Path.Combine(projectRoot, "Article.Infrastructure", "Templates", "welcome_user.html");
+                string body = await File.ReadAllTextAsync(templatePath);
+                body = body.Replace("{{FULLNAME}}", $"{tempUser.Firstname} {tempUser.Lastname}");
+                await _authRepository.SendMessageEmail(email, "Xush kelibsiz!", body);
 
                 return Result<string>.Success($"{email} muvaffaqiyatli ro‘yxatdan o‘tdi");
             }
@@ -171,7 +182,7 @@ namespace Article.Application.Services
                 var user = await _authRepository.GetByIdAsync(refreshTokenEntity.UserId);
                 if (user == null)
                 {
-                    return Result<TokenResponse>.Failure(UserError.CheckUser);
+                    return Result<TokenResponse>.Failure(UserError.CheckUserByRefreshToken);
                 }
 
                 // 4. Yangi tokenlar yaratish
@@ -193,5 +204,99 @@ namespace Article.Application.Services
             }
         }
 
+        public async Task<Result<string>> ForgotPasswordService(ForgotPasswordDTO forgotPassword)
+        {
+            try
+            {
+                string email = forgotPassword.Email.Trim().ToLower(); // Emailni tozalash
+
+                User user = await _authRepository.IsUserExistsByEmailAsync(email);
+
+                if (user is null)
+                {
+                    return Result<string>.Failure(UserError.CheckUserByEmail);
+                }
+
+                // 1. Reset token yaratish
+                string resetToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+                var passwordReset = new PasswordReset
+                {
+                    UserId = user.Id,
+                    Token = resetToken,
+                    ExpiryDate = DateTime.UtcNow.AddHours(1) // 1 soat amal qiladi
+                };
+
+                // 2. Eski tokenni o‘chirish va yangisini qo‘shish
+                await _authRepository.ExistingReset(passwordReset);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                // 3. Email jo‘natish
+                string resetLink = $"https://yourwebsite.com/reset-password?token={resetToken}";
+                string baseDirectory = AppContext.BaseDirectory;
+                string projectRoot = Directory.GetParent(baseDirectory)?.Parent?.Parent?.Parent?.Parent?.FullName ?? "";
+                string templatePath = Path.Combine(projectRoot, "Article.Infrastructure", "Templates", "reset_password.html");
+                string body = await File.ReadAllTextAsync(templatePath);
+                body = body.Replace("{{RESET_LINK}}", resetLink);
+                await _authRepository.SendMessageEmail(email, "Parolni tiklash", body);
+
+                return Result<string>.Success($"Parolni tiklash havolasi {email} ga yuborildi.");
+            }
+            catch (Exception ex)
+            {
+                return Result<string>.Failure(new Error("Forgot Passwordda xatolik", ex.Message));
+            }
+        }
+
+        public async Task<Result<string>> ResetPasswordService(ResetPasswordDTO resetPasswordDto)
+        {
+            try
+            {
+                // Tokenni tekshirish
+                var passwordReset = await _authRepository.PasswordReset(resetPasswordDto.Token);
+
+                if (passwordReset is null)
+                {
+                    return Result<string>.Failure(new Error("Reset Token noto‘g‘ri", "Token bazada topilmadi yoki noto‘g‘ri."));
+                }
+
+                // Tokenning amal qilish muddatini tekshirish
+                if (passwordReset.ExpiryDate < DateTime.UtcNow)
+                {
+                    return Result<string>.Failure(new Error("Reset Token muddati o‘tgan", "Tokenning amal qilish vaqti tugagan."));
+                }
+
+                // Foydalanuvchini topish
+                var user = await _authRepository.GetByIdAsync(passwordReset.UserId);
+
+                if (user is null)
+                {
+                    return Result<string>.Failure(UserError.CheckUserById);
+                }
+
+                // Yangi parolni hash qilish
+                user.HashedPassword = BCrypt.Net.BCrypt.HashPassword(resetPasswordDto.NewPassword);
+                user.UpdateDate = DateTime.UtcNow;
+
+                // Parolni yangilash va tokenni o‘chirish
+                await _authRepository.RemovePasswordReset(passwordReset);
+
+                await _unitOfWork.SaveChangesAsync();
+
+                string baseDirectory = AppContext.BaseDirectory;
+                string projectRoot = Directory.GetParent(baseDirectory)?.Parent?.Parent?.Parent?.Parent?.FullName ?? "";
+                string templatePath = Path.Combine(projectRoot, "Article.Infrastructure", "Templates", "welcome_reset_password.html");
+                string body = await File.ReadAllTextAsync(templatePath);
+                body = body.Replace("{{FULLNAME}}", $"{user.Firstname} {user.Lastname}");
+                await _authRepository.SendMessageEmail(user.Email, "Muvaffaqqiyatli", body);
+
+                return Result<string>.Success("Parolingiz muvaffaqiyatli yangilandi. Endi tizimga yangi parol bilan kiring.");
+            }
+            catch (Exception ex)
+            {
+                return Result<string>.Failure(new Error("Reset Passwordda xatolik", ex.Message));
+            }
+        }
     }
 }

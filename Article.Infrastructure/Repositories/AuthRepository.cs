@@ -1,22 +1,20 @@
-﻿using Article.Application.Data;
+﻿using Article.Domain.HelpModels.PasswordResetModel;
+using Article.Domain.HelpModels.RefreshTokenModel;
+using Article.Domain.HelpModels.TempUserModel;
 using Article.Domain.MainModels.UserModel;
 using Article.Domain.Models.UserModel.IAuthRepositories;
 using Article.Domain.StaticModels;
+using MailKit.Security;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using System.Net.Mail;
-using System.Net;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
 using MimeKit;
-using MailKit.Security;
-using Article.Domain.HelpModels.TempUserModel;
-using Article.Domain.HelpModels.RefreshTokenModel;
-using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net.Mail;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Article.Infrastructure.Repositories
 {
@@ -65,25 +63,14 @@ namespace Article.Infrastructure.Repositories
             oldTempUser.ExpirationTime = newTempUser.ExpirationTime;
         }
 
-        public async Task SendVerificationEmail(string email, int code)
+        public async Task SendMessageEmail(string toEmail, string subject, string body)
         {
             try
             {
                 var message = new MimeMessage();
                 message.From.Add(new MailboxAddress(_smtpSettings.SenderName, _smtpSettings.SenderEmail));
-                message.To.Add(new MailboxAddress(email, email));
-                message.Subject = "Tasdiqlash kodi";
-
-                // To‘g‘ri yo‘lni aniqlash
-                string baseDirectory = AppContext.BaseDirectory;
-
-                // Loyiha ildiz katalogini olish
-                string projectRoot = Directory.GetParent(baseDirectory).Parent.Parent.Parent.Parent.FullName;
-
-                // To‘g‘ri yo‘lni hosil qilish
-                string templatePath = Path.Combine(projectRoot, "Article.Infrastructure", "Templates", "verification_email.html");
-
-                string body = File.ReadAllText(templatePath).Replace("{{CODE}}", code.ToString());
+                message.To.Add(new MailboxAddress(toEmail, toEmail));
+                message.Subject = subject;
 
                 message.Body = new TextPart("html") { Text = body };
 
@@ -157,43 +144,6 @@ namespace Article.Infrastructure.Repositories
             return refreshToken;
         }
 
-        public async Task SendWelcomeEmail(string email, string fullName)
-        {
-            try
-            {
-                var message = new MimeMessage();
-                message.From.Add(new MailboxAddress(_smtpSettings.SenderName, _smtpSettings.SenderEmail));
-                message.To.Add(new MailboxAddress(email, email)); // 🛑 Email qabul qiluvchi qo‘shildi!
-                message.Subject = "Xush kelibsiz!";
-
-                // Loyiha ildiz katalogini olish
-                string baseDirectory = AppContext.BaseDirectory;
-                string projectRoot = Directory.GetParent(baseDirectory)?.Parent?.Parent?.Parent?.Parent?.FullName ?? "";
-                string templatePath = Path.Combine(projectRoot, "Article.Infrastructure", "Templates", "welcome_user.html");
-
-                if (!File.Exists(templatePath))
-                {
-                    throw new FileNotFoundException($"Email shabloni topilmadi: {templatePath}");
-                }
-
-                string body = await File.ReadAllTextAsync(templatePath);
-                body = body.Replace("{{FULLNAME}}", fullName); // Fullname ni joyiga qo‘yish
-
-                message.Body = new TextPart("html") { Text = body };
-
-                using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
-                await smtpClient.ConnectAsync(_smtpSettings.Server, _smtpSettings.Port, SecureSocketOptions.StartTls);
-                await smtpClient.AuthenticateAsync(_smtpSettings.Username, _smtpSettings.Password);
-                await smtpClient.SendAsync(message);
-                await smtpClient.DisconnectAsync(true);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Email jo‘natishda xatolik: {ex.Message}");
-            }
-        }
-
-
         public async Task<string> GenerateUniqueUsernameAsync()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -220,6 +170,27 @@ namespace Article.Infrastructure.Repositories
                 .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
         }
 
+        public async Task ExistingReset(PasswordReset passwordReset)
+        {
+            PasswordReset existingReset = await _applicationDbContext.PasswordResets
+                .FirstOrDefaultAsync(pr => pr.UserId == passwordReset.UserId);
 
+            if (existingReset is not null)
+            {
+                _applicationDbContext.PasswordResets.Remove(existingReset);
+            }
+            await _context.PasswordResets.AddAsync(passwordReset);
+        }
+
+        public async Task<PasswordReset> PasswordReset(string token)
+        {
+            return await _applicationDbContext.PasswordResets
+                .FirstOrDefaultAsync(pr => pr.Token == token);
+        }
+
+        public async Task RemovePasswordReset(PasswordReset passwordReset)
+        {
+            _applicationDbContext.PasswordResets.Remove(passwordReset);
+        }
     }
 }

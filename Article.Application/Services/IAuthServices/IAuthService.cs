@@ -9,5 +9,7 @@ namespace Article.Application.Services.IAuthServices
         Task<Result<TokenResponse>> SignInService(SignInDTO signInDTO);
         Task<Result<string>> VerificationCodeService(VerificationCodeDTO verificationCodeDTO);
         Task<Result<TokenResponse>> RefreshTokenService(RefreshTokenDTO refreshToken);
+        Task<Result<string>> ForgotPasswordService(ForgotPasswordDTO forgotPassword);
+        Task<Result<string>> ResetPasswordService(ResetPasswordDTO resetPasswordDto);
     }
 }

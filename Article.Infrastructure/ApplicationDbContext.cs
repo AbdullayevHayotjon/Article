@@ -1,5 +1,6 @@
 ﻿using Article.Domain.Abstractions;
 using Article.Domain.HelpModels.ConclusionModel;
+using Article.Domain.HelpModels.PasswordResetModel;
 using Article.Domain.HelpModels.RefreshTokenModel;
 using Article.Domain.HelpModels.TempUserModel;
 using Article.Domain.HelpModels.UserFollowingModel;
@@ -53,5 +54,6 @@ namespace Article.Infrastructure
         public DbSet<Conclusion> Conclusions { get; set; }
         public DbSet<TempUser> TempUsers { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<PasswordReset> PasswordResets { get; set; }
     }
 }
