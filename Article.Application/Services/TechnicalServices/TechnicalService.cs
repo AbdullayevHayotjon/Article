@@ -1,10 +1,5 @@
 ﻿using Article.Domain.MainModels.ArticleModels;
 using Article.Domain.MainModels.TechnicalModels.ITechnicalRepositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Article.Application.Services.TechnicalServices
 {
