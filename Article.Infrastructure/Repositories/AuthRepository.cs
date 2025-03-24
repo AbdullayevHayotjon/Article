@@ -11,7 +11,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MimeKit;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -133,13 +132,13 @@ namespace Article.Infrastructure.Repositories
             };
 
             // Eski refresh tokenni o‘chirish (agar bo‘lsa)
-            var existingToken = await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.UserId == userId);
+            var existingToken = await _applicationDbContext.RefreshTokens.FirstOrDefaultAsync(rt => rt.UserId == userId);
             if (existingToken != null)
             {
-                _context.RefreshTokens.Remove(existingToken);
+                _applicationDbContext.RefreshTokens.Remove(existingToken);
             }
 
-            _context.RefreshTokens.Add(refreshTokenEntity);
+            _applicationDbContext.RefreshTokens.Add(refreshTokenEntity);
 
             return refreshToken;
         }
@@ -179,7 +178,7 @@ namespace Article.Infrastructure.Repositories
             {
                 _applicationDbContext.PasswordResets.Remove(existingReset);
             }
-            await _context.PasswordResets.AddAsync(passwordReset);
+            await _applicationDbContext.PasswordResets.AddAsync(passwordReset);
         }
 
         public async Task<PasswordReset> PasswordReset(string token)
