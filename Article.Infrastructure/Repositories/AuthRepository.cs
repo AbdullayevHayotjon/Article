@@ -145,7 +145,7 @@ namespace Article.Infrastructure.Repositories
 
         public async Task<string> GenerateUniqueUsernameAsync()
         {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.";
             string username = new string(Enumerable.Repeat(chars, 10)
                     .Select(s => s[Random.Shared.Next(s.Length)]).ToArray());
 
@@ -190,6 +190,18 @@ namespace Article.Infrastructure.Repositories
         public async Task RemovePasswordReset(PasswordReset passwordReset)
         {
             _applicationDbContext.PasswordResets.Remove(passwordReset);
+        }
+
+        public async Task RemoveRefreshTokenByUserId(Guid userId)
+        {
+            var existingToken = await _applicationDbContext.RefreshTokens
+                    .FirstOrDefaultAsync(rt => rt.UserId == userId);
+
+            if (existingToken != null)
+            {
+                _applicationDbContext.RefreshTokens.Remove(existingToken);
+                await _applicationDbContext.SaveChangesAsync();
+            }
         }
     }
 }

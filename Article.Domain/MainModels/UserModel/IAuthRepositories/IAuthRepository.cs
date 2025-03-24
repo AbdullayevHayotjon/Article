@@ -24,5 +24,6 @@ namespace Article.Domain.Models.UserModel.IAuthRepositories
         Task ExistingReset(PasswordReset passwordReset);
         Task<PasswordReset> PasswordReset(string token);
         Task RemovePasswordReset(PasswordReset passwordReset);
+        Task RemoveRefreshTokenByUserId(Guid userId);
     }
 }
