@@ -47,7 +47,7 @@ namespace Article.Infrastructure.ArticleServices
                     Category = category,
                     FileUrl = filePath,
                     UserId = userId,
-                    Status = ArticleStatus.Sent,
+                    Status = ArticleStatus.Pending,
                     PublishedDate = DateTime.UtcNow
                 };
 

@@ -1,4 +1,5 @@
 ﻿using Article.Application.Services.TechnicalServices;
+using Article.Domain.MainModels.TechnicalModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +16,7 @@ namespace Article.Api.Controllers
         }
 
         [HttpGet("AllArticles")]
-        public async ValueTask<IActionResult> GetAllArticlesAsync()
+        public async Task<IActionResult> GetAllArticlesAsync()
         {
             var articles = await _technicalService.GetAllArticlesAsync();
 
@@ -26,7 +27,7 @@ namespace Article.Api.Controllers
         }
 
         [HttpGet("{articleId}")]
-        public async ValueTask<IActionResult> GetArticleByIdAsync(Guid articleId)
+        public async Task<IActionResult> GetArticleByIdAsync(Guid articleId)
         {
             var article = await _technicalService.GetArticleByIdAsync(articleId);
             if (article == null)
@@ -34,7 +35,7 @@ namespace Article.Api.Controllers
             return Ok(article);
         }
         [HttpGet("Read/{articleId}")]
-        public async ValueTask<IActionResult> ReadArticleAsync(Guid articleId)
+        public async Task<IActionResult> ReadArticleAsync(Guid articleId)
         {
             var article = await _technicalService.ReadArticleAsync(articleId);
             if (article == null)
@@ -42,15 +43,19 @@ namespace Article.Api.Controllers
             return Ok(article);
         }
         [HttpPost("SaveConclusion/{articleId}")]
-        public async ValueTask<IActionResult> SaveConclusionAsync(Guid articleId, string summary)
+        public async Task<IActionResult> SaveConclusionAsync(Guid articleId, [FromBody] SaveConclusionRequest request)
         {
-            bool saved = await _technicalService.SaveConclusionAsync(articleId, summary);
+            if (string.IsNullOrWhiteSpace(request.Summary))
+                return BadRequest("Xulosa matni bo'sh bo'lmasligi kerak.");
+
+            bool saved = await _technicalService.SaveConclusionAsync(articleId, request.Summary);
             if (!saved)
-                return BadRequest();
-            return Ok();
+                return BadRequest("Xulosa saqlanmadi.");
+
+            return Ok("Xulosa saqlandi.");
         }
         [HttpPost("Approve/{articleId}")]
-        public async ValueTask<IActionResult> ApproveArticleAsync(Guid articleId)
+        public async Task<IActionResult> ApproveArticleAsync(Guid articleId)
         {
             bool approved = await _technicalService.ApproveArticleAsync(articleId);
             if (!approved)
@@ -58,12 +63,16 @@ namespace Article.Api.Controllers
             return Ok();
         }
         [HttpPost("Reject/{articleId}")]
-        public async ValueTask<IActionResult> RejectArticleAsync(Guid articleId, string summary)
+        public async Task<IActionResult> RejectArticleAsync(Guid articleId, [FromBody] SaveConclusionRequest request)
         {
-            bool rejected = await _technicalService.RejectArticleAsync(articleId, summary);
+            if (string.IsNullOrWhiteSpace(request.Summary))
+                return BadRequest("Xulosa matni bo'sh bo'lmasligi kerak.");
+
+            bool rejected = await _technicalService.RejectArticleAsync(articleId, request.Summary);
             if (!rejected)
-                return BadRequest();
-            return Ok();
+                return BadRequest("Maqola rad etilmadi.");
+
+            return Ok("Maqola rad etildi.");
         }
     }
 }
