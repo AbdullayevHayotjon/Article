@@ -4,6 +4,7 @@ using Article.Domain.MainModels.ArticleModels;
 using Article.Domain.MainModels.UserModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Article.Infrastructure.ArticleServices
 {
@@ -17,7 +18,7 @@ namespace Article.Infrastructure.ArticleServices
             _context = context;
         }
 
-        public async Task<Result<ArticleModel>> UploadArticleAsync(IFormFile file, string title, string category, Guid userId)
+        public async Task<Result<ArticleModel>> UploadArticleAsync(IFormFile file, string title, string category,Guid userId)
         {
             try
             {
@@ -37,6 +38,8 @@ namespace Article.Infrastructure.ArticleServices
                 {
                     await file.CopyToAsync(stream);
                 }
+
+              
 
                 var article = new ArticleModel
                 {

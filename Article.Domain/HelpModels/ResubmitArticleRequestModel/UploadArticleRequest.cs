@@ -12,6 +12,5 @@ namespace Article.Domain.HelpModels.ResubmitArticleRequestModel
         public IFormFile File { get; set; } = null!;
         public string Title { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
-        public Guid UserId { get; set; }
     }
 }
