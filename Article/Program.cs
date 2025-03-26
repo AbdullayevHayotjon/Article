@@ -12,12 +12,12 @@ namespace Article
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // SmtpSettingsni o‘rnatish
+            // SmtpSettings sozlamalarini yuklash
             builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
 
-            // JWT Settingsni o‘rnatish
+            // JWT sozlamalarini yuklash
             var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-            var secretKey = jwtSettings["Secret"];
+            var secretKey = jwtSettings["Secret"] ?? throw new ArgumentNullException("JWT Secret not found!");
 
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
@@ -25,38 +25,41 @@ namespace Article
             });
 
             // JWT autentifikatsiya tizimini sozlash
-            builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
                 {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtSettings["Issuer"],
-                    ValidAudience = jwtSettings["Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
-                };
-            });
+                    options.RequireHttpsMetadata = false; // Lokal ishlashi uchun HTTPS talab qilinmaydi
+                    options.SaveToken = true;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwtSettings["Issuer"],
+                        ValidAudience = jwtSettings["Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+                    };
+                });
+
+            // CORS sozlamalari - Frontend bilan ishlashi uchun
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll",
-                    policy => policy.AllowAnyOrigin()
-                                    .AllowAnyMethod()
-                                    .AllowAnyHeader());
+                options.AddPolicy("FrontendPolicy", policy =>
+                {
+                    policy.WithOrigins("http://localhost:3000") // Frontend domenini qo'sh
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                });
             });
+
             // Servislarni qo‘shish
-            builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
             {
                 options.EnableAnnotations();
-              
+
                 // Swaggerda Bearer tokenni qo‘shish
                 options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
                 {
@@ -83,16 +86,22 @@ namespace Article
                 });
             });
 
-            // Qo‘shimcha servislar
+            // Ma'lumotlar bazasi va boshqa servislar
             builder.Services.AddInfrastructureRegisterServices(builder.Configuration);
 
             var app = builder.Build();
+
+            // Frontend bilan ishlash uchun CORS-ni qo'shish
+            app.UseCors("FrontendPolicy");
+
+            // Xatoliklarni kuzatish uchun middleware
             app.Use(async (context, next) =>
             {
                 context.Request.EnableBuffering();
                 await next();
             });
-            // Developmentda Swaggerni yoqish
+
+            // HTTPS Redirect xatosini oldini olish
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
