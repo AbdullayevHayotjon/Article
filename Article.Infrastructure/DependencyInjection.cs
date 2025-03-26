@@ -3,6 +3,7 @@ using Article.Application.Services;
 using Article.Application.Services.IArticleServices;
 using Article.Application.Services.IAuthServices;
 using Article.Application.Services.ICategoryServices;
+using Article.Application.Services.IEditorServices;
 using Article.Application.Services.IReviewerServices;
 using Article.Application.Services.TechnicalServices;
 using Article.Domain.Abstractions;
@@ -14,6 +15,7 @@ using Article.Infrastructure.CategoryServices;
 using Article.Infrastructure.Data;
 using Article.Infrastructure.Repositories;
 using Article.Infrastructure.ReviewerServices;
+using Article.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,6 +46,7 @@ namespace Article.Infrastructure
             services.AddScoped<ITechnicalService, TechnicalService>();
             services.AddScoped<IReviewerService, ReviewerService>();
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IEditorArticleService, EditorArticleService>();
 
             services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
