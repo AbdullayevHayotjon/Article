@@ -101,12 +101,12 @@ namespace Article
                 await next();
             });
 
-            // HTTPS Redirect xatosini oldini olish
-            if (app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment() || builder.Configuration.GetValue<bool>("SwaggerEnable"))
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
 
             app.UseHttpsRedirection();
 
