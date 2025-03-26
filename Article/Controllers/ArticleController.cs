@@ -1,4 +1,5 @@
 ﻿using Article.Application.Services.IArticleServices;
+using Article.Application.Services.ICategoryServices;
 using Article.Domain.HelpModels.ResubmitArticleRequestModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +15,17 @@ namespace Article.Api.Controllers
     public class ArticleController : ControllerBase
     {
         private readonly IArticleService _articleService;
-
-        public ArticleController(IArticleService articleService)
+        private readonly ICategoryService _categoryService;
+        public ArticleController(IArticleService articleService, ICategoryService categoryService )
         {
             _articleService = articleService;
+            _categoryService = categoryService;
+        }
+        [HttpGet("get-categories")]
+        public async Task<IActionResult> GetCategories()
+        {
+            var categories = await _categoryService.GetAllCategoriesAsync();
+            return Ok(categories);
         }
 
         [HttpPost("upload")]
@@ -29,8 +37,10 @@ namespace Article.Api.Controllers
         public async Task<IActionResult> UploadArticle([FromForm] UploadArticleRequest request)
         {
             var userid= User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var top = await _categoryService.GetCategoryByIdAsync(request.CategoryId);
 
-            var article = await _articleService.UploadArticleAsync(request.File, request.Title, request.Category,Guid.Parse(userid));
+
+            var article = await _articleService.UploadArticleAsync(request.File, request.Title, top.Name.ToString(),Guid.Parse(userid));
             return Ok(article);
         }
 

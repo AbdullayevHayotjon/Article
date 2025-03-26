@@ -1,7 +1,10 @@
 ﻿using Article.Domain.Abstractions;
+using Article.Domain.HelpModels.CategoryModel;
 using Article.Domain.HelpModels.ConclusionModel;
 using Article.Domain.HelpModels.PasswordResetModel;
 using Article.Domain.HelpModels.RefreshTokenModel;
+using Article.Domain.HelpModels.ReviewModel;
+using Article.Domain.HelpModels.Specialization_Model;
 using Article.Domain.HelpModels.TempUserModel;
 using Article.Domain.HelpModels.UserFollowingModel;
 using Article.Domain.MainModels.ArticleModels;
@@ -50,10 +53,14 @@ namespace Article.Infrastructure
         }
         public DbSet<User> Users { get; set; }
         public DbSet<ArticleModel> ModelArticle { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<Specialization> Specializations { get; set; }
         public DbSet<UserFollowing> UserFollowings { get; set; }
         public DbSet<Conclusion> Conclusions { get; set; }
         public DbSet<TempUser> TempUsers { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<PasswordReset> PasswordResets { get; set; }
+        public DbSet<Category> Categorys { get; set; }
+
     }
 }
