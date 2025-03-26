@@ -1,7 +1,8 @@
 ﻿using Article.Application.Services.TechnicalServices;
 using Article.Domain.MainModels.TechnicalModels;
-using Microsoft.AspNetCore.Http;
+using Aspose.Words;
 using Microsoft.AspNetCore.Mvc;
+using System.Text;
 
 namespace Article.Api.Controllers
 {
@@ -33,6 +34,26 @@ namespace Article.Api.Controllers
             if (article == null)
                 return NotFound();
             return Ok(article);
+        }
+        [HttpGet("view/{articleId}")]
+        public async Task<IActionResult> ViewArticle(Guid articleId)
+        {
+            var article = await _technicalService.GetArticleByIdAsync(articleId);
+            if (article == null || string.IsNullOrWhiteSpace(article.FileUrl))
+                return NotFound("Maqola topilmadi.");
+
+            if (!System.IO.File.Exists(article.FileUrl))
+                return NotFound("Fayl mavjud emas.");
+
+            Document doc = new Document(article.FileUrl);
+            string htmlContent;
+            using (MemoryStream stream = new MemoryStream())
+            {
+                doc.Save(stream, SaveFormat.Html);
+                htmlContent = Encoding.UTF8.GetString(stream.ToArray());
+            }
+
+            return Content(htmlContent, "text/html");
         }
         [HttpGet("Read/{articleId}")]
         public async Task<IActionResult> ReadArticleAsync(Guid articleId)
@@ -74,5 +95,6 @@ namespace Article.Api.Controllers
 
             return Ok("Maqola rad etildi.");
         }
+
     }
 }

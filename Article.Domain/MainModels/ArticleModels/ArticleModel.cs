@@ -40,6 +40,7 @@ namespace Article.Domain.MainModels.ArticleModels
     {
         Pending = 1,  // Ko‘rib chiqish jarayonida
         Approved = 2, // Tasdiqlangan
-        Rejected = 3  // Rad etilgan
+        Rejected = 3,  // Rad etilgan
+        Completed = 4
     }
 }

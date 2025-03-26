@@ -2,6 +2,8 @@
 using Article.Domain.MainModels.TechnicalModels.ITechnicalRepositories;
 using Article.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using DocumentFormat.OpenXml.Packaging;
+using System.Text;
 
 namespace Article.Application.Services.TechnicalServices
 {
@@ -54,9 +56,25 @@ namespace Article.Application.Services.TechnicalServices
             if (!File.Exists(article.FileUrl))
                 return null;
 
+            if (Path.GetExtension(article.FileUrl).Equals(".docx", StringComparison.OrdinalIgnoreCase))
+            {
+                return ReadDocxContent(article.FileUrl);
+            }
+
             return await File.ReadAllTextAsync(article.FileUrl);
         }
+        private string ReadDocxContent(string filePath)
+        {
+            StringBuilder text = new StringBuilder();
 
+            using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(filePath, false))
+            {
+                var body = wordDoc.MainDocumentPart.Document.Body;
+                text.Append(body.InnerText);
+            }
+
+            return text.ToString();
+        }
         public async Task<bool> RejectArticleAsync(Guid articleId, string summary)
         {
             bool saved = await SaveConclusionAsync(articleId, summary);
