@@ -20,7 +20,7 @@ namespace Article.Infrastructure.ReviewerServices
         {
             return await _context.ModelArticle
                 .Where(a => _context.Specializations
-                    .Any(s => s.UserId == reviewerId && s.WorkerCategory == a.Category))
+                    .Any(s => s.UserId == reviewerId && s.WorkerCategory == a.Category && a.Status == ArticleStatus.Completed))
                 .Select(a => new ArticleDto
                 {
                     Id = a.Id,
