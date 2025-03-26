@@ -26,7 +26,7 @@ namespace Article.Domain.MainModels.ArticleModels
         public DateTime PublishedDate { get; set; } = DateTime.UtcNow;
 
         [Required(ErrorMessage = "Maqola holati bo‘sh bo‘lishi mumkin emas!")]
-        public ArticleStatus Status { get; set; } = ArticleStatus.Sent;
+        public ArticleStatus Status { get; set; } = ArticleStatus.Pending;
 
         // Maqola xulosasi bilan bog‘lash
         public Conclusion? Conclusion { get; set; }
@@ -38,9 +38,9 @@ namespace Article.Domain.MainModels.ArticleModels
 
     public enum ArticleStatus
     {
-        Sent = 1,     // Yuborildi
-        Pending = 2,  // Ko‘rib chiqish jarayonida
-        Approved = 3, // Tasdiqlangan
-        Rejected = 4  // Rad etilgan
+        Pending = 1,  // Ko‘rib chiqish jarayonida
+        Approved = 2, // Tasdiqlangan
+        Rejected = 3,  // Rad etilgan
+        Completed = 4
     }
 }

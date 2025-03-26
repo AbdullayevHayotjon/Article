@@ -4,11 +4,11 @@ namespace Article.Application.Services.TechnicalServices
 {
     public interface ITechnicalService
     {
-        ValueTask<IEnumerable<ArticleModel>> GetAllArticlesAsync();
-        ValueTask<ArticleModel?> GetArticleByIdAsync(Guid articleId);
-        ValueTask<string?> ReadArticleAsync(Guid articleId);
-        ValueTask<bool> SaveConclusionAsync(Guid articleId, string summary);
-        ValueTask<bool> ApproveArticleAsync(Guid articleId);
-        ValueTask<bool> RejectArticleAsync(Guid articleId, string summary);
+        Task<List<ArticleDTO>> GetAllArticlesAsync();
+        Task<ArticleDTO?> GetArticleByIdAsync(Guid articleId);
+        Task<string?> ReadArticleAsync(Guid articleId);
+        Task<bool> SaveConclusionAsync(Guid articleId, string summary);
+        Task<bool> ApproveArticleAsync(Guid articleId);
+        Task<bool> RejectArticleAsync(Guid articleId, string summary);
     }
 }

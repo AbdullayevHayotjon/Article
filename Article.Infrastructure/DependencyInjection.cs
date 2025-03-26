@@ -6,6 +6,7 @@ using Article.Application.Services.ICategoryServices;
 using Article.Application.Services.IReviewerServices;
 using Article.Application.Services.TechnicalServices;
 using Article.Domain.Abstractions;
+using Article.Domain.MainModels.EditorModels.IEditorArticleRepositories;
 using Article.Domain.MainModels.TechnicalModels.ITechnicalRepositories;
 using Article.Domain.Models.UserModel.IAuthRepositories;
 using Article.Infrastructure.ArticleServices;
@@ -35,8 +36,9 @@ namespace Article.Infrastructure
 
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<ITechnicalRepository, TechnicalRepository>();
+            services.AddScoped<IEditorArticleRepository, EditorArticleRepository>();
             services.AddScoped(typeof(Repository<>));
-           
+
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IArticleService, ArticleService>();
             services.AddScoped<ITechnicalService, TechnicalService>();
