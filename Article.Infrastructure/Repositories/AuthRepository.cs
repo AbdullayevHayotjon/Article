@@ -191,17 +191,5 @@ namespace Article.Infrastructure.Repositories
         {
             _applicationDbContext.PasswordResets.Remove(passwordReset);
         }
-
-        public async Task RemoveRefreshTokenByUserId(Guid userId)
-        {
-            var existingToken = await _applicationDbContext.RefreshTokens
-                    .FirstOrDefaultAsync(rt => rt.UserId == userId);
-
-            if (existingToken != null)
-            {
-                _applicationDbContext.RefreshTokens.Remove(existingToken);
-                await _applicationDbContext.SaveChangesAsync();
-            }
-        }
     }
 }

@@ -298,21 +298,5 @@ namespace Article.Application.Services
                 return Result<string>.Failure(new Error("Reset Passwordda xatolik", ex.Message));
             }
         }
-        
-        public async Task<Result<string>> LogoutService(Guid userId)
-        {
-            try
-            {
-                // Foydalanuvchining refresh tokenini bazadan o‘chirish
-                await _authRepository.RemoveRefreshTokenByUserId(userId);
-
-                return Result<string>.Success("Tizimdan muvaffaqqiyatli chiqildi.");
-            }
-            catch (Exception ex)
-            {
-                return Result<string>.Failure(new Error("Logoutda xatolik", ex.Message));
-            }
-        }
-
     }
 }

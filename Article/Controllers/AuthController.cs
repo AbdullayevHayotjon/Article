@@ -114,30 +114,6 @@ namespace Article.Api.Controllers
 
         [HttpPost]
         [SwaggerOperation(
-            Summary = "Tizimdan chiqish",
-            Description = "Tizimdan chiqish uchun bosing"
-            )]
-        public async Task<IActionResult> LogOut()
-        {
-            try
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if(userId == null)
-                {
-                    return Unauthorized(new { message = "Foydalanuvchi aniqlanmadi" });
-                }
-                var result = await _authService.LogoutService(Guid.Parse(userId));
-
-                return result.IsSuccess ? Ok(result) : BadRequest(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost]
-        [SwaggerOperation(
             Summary = "Token yangilash",
             Description = "Refresh token kiriting va bosing"
             )]

@@ -11,6 +11,5 @@ namespace Article.Application.Services.IAuthServices
         Task<Result<TokenResponse>> RefreshTokenService(RefreshTokenDTO refreshToken);
         Task<Result<string>> ForgotPasswordService(ForgotPasswordDTO forgotPassword);
         Task<Result<string>> ResetPasswordService(ResetPasswordDTO resetPasswordDto);
-        Task<Result<string>> LogoutService(Guid userId);
     }
 }
