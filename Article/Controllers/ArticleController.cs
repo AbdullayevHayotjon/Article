@@ -77,6 +77,10 @@ namespace Article.Api.Controllers
 
 
         [HttpGet("{articleId}")]
+        [SwaggerOperation(
+            Summary = "maqola va uning muallifi haqida ma'lumot qaytaradi",
+            Description = "maqola id sini kiritish yetarli"
+            )]
         public async Task<IActionResult> GetArticleById(Guid articleId)
         {
             var article = await _articleService.GetArticleByIdAsync(articleId);
