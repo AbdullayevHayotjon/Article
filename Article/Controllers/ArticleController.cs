@@ -10,7 +10,7 @@ namespace Article.Api.Controllers
 {
     [Route("api/articles")]
     [ApiController]
-    [Authorize(Roles = "User")]
+  
 
     public class ArticleController : ControllerBase
     {
@@ -68,6 +68,7 @@ namespace Article.Api.Controllers
 
 
         [HttpPut("resubmit/{articleId}")]
+        [Authorize(Roles = "User")]
         [SwaggerOperation(
             Summary = "maqolani qayta yuklash qismi",
             Description = "!!! maqola texnik taqrizchi yoki tahrirchi tomonidan qaytarilgan taqdirda qayta yuklash mumkin"
