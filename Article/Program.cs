@@ -55,10 +55,10 @@ namespace Article
 
 
 
-            builder.WebHost.ConfigureKestrel(options =>
-            {
-                options.ListenAnyIP(5093); // Hamma IP-larni tinglash
-            });
+            //builder.WebHost.ConfigureKestrel(options =>
+            //{
+            //    options.ListenAnyIP(5093); // Hamma IP-larni tinglash
+            //});
 
             builder.WebHost.UseUrls("http://0.0.0.0:5093");
 
