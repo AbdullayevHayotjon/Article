@@ -28,7 +28,7 @@ namespace Article
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
-                    options.RequireHttpsMetadata = false; // Lokal ishlashi uchun HTTPS talab qilinmaydi
+                    options.RequireHttpsMetadata = false; // HTTPS talab qilinmaydi
                     options.SaveToken = true;
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
@@ -42,25 +42,31 @@ namespace Article
                     };
                 });
 
-            // CORS sozlamalari - Frontend bilan ishlashi uchun
+            // CORS sozlamalari - Hamma kelayotgan so'rovlarni ruxsat berish
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("FrontendPolicy", policy =>
+                options.AddPolicy("AllowAll", policy =>
                 {
-                    policy.WithOrigins("http://localhost:3000") // Frontend domenini qo'sh
+                    policy.AllowAnyOrigin()
                           .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials();
+                          .AllowAnyHeader();
                 });
             });
+
+
+
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.ListenAnyIP(5093); // Hamma IP-larni tinglash
+            });
+
+            builder.WebHost.UseUrls("http://0.0.0.0:5093");
 
             // Servislarni qo‘shish
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
             {
                 options.EnableAnnotations();
-
-                // Swaggerda Bearer tokenni qo‘shish
                 options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
                 {
                     Name = "Authorization",
@@ -91,8 +97,8 @@ namespace Article
 
             var app = builder.Build();
 
-            // Frontend bilan ishlash uchun CORS-ni qo'shish
-            app.UseCors("FrontendPolicy");
+            // CORS-ni qo'shish
+            app.UseCors("AllowAll");
 
             // Xatoliklarni kuzatish uchun middleware
             app.Use(async (context, next) =>
@@ -107,8 +113,8 @@ namespace Article
                 app.UseSwaggerUI();
             }
 
-
-            app.UseHttpsRedirection();
+            // HTTPS ni o‘chirib qo‘yamiz, chunki Swagger HTTP orqali ishlayapti
+            // app.UseHttpsRedirection();
 
             // JWT autentifikatsiyasini qo‘shish
             app.UseAuthentication();
